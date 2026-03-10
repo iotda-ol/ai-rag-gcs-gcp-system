@@ -22,9 +22,9 @@ locals {
     "rag-vector-distance-threshold" = tostring(var.rag_vector_distance_threshold)
     "rag-sa-email"                  = google_service_account.rag_sa.email
     # Operator-managed secrets (initial value is a safe placeholder)
-    "gemini-api-key"                = "REPLACE_WITH_ACTUAL_KEY"
-    "vertex-ai-endpoint-override"   = ""
-    "langchain-api-key"             = "REPLACE_WITH_ACTUAL_KEY"
+    "gemini-api-key"              = "REPLACE_WITH_ACTUAL_KEY"
+    "vertex-ai-endpoint-override" = ""
+    "langchain-api-key"           = "REPLACE_WITH_ACTUAL_KEY"
   }
 }
 
@@ -34,11 +34,7 @@ resource "google_secret_manager_secret" "app_secrets" {
   secret_id = "${var.app_name}-${each.key}"
   project   = var.project_id
 
-  labels = {
-    environment = var.environment
-    managed_by  = "terraform"
-    component   = "rag-config"
-  }
+  labels = merge(local.common_labels, { component = "rag-config" })
 
   replication {
     auto {}

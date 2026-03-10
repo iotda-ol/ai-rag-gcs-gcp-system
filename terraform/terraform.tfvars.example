@@ -1,0 +1,39 @@
+# terraform.tfvars.example
+#
+# Copy this file to terraform.tfvars (git-ignored) and fill in the values
+# before running `terraform plan` / `terraform apply`.
+#
+#   cp terraform.tfvars.example terraform.tfvars
+
+# ── Required ────────────────────────────────────────────────────────────────
+
+project_id = "my-gcp-project-id"   # your GCP project ID
+
+# ── Optional (uncomment to override defaults) ────────────────────────────────
+
+# region      = "us-central1"
+# zone        = "us-central1-a"
+# environment = "dev"   # dev | staging | prod
+# app_name    = "rag"
+
+# ── GCS ─────────────────────────────────────────────────────────────────────
+
+# raw_docs_bucket_suffix       = "raw-docs"
+# processed_docs_bucket_suffix = "processed-docs"
+# bucket_location              = "US"
+# bucket_storage_class         = "STANDARD"   # STANDARD | NEARLINE | COLDLINE | ARCHIVE
+# bucket_versioning_enabled    = true
+
+# ── Vertex AI ───────────────────────────────────────────────────────────────
+
+# embedding_model               = "text-embedding-005"
+# rag_corpus_display_name       = "rag-corpus"
+# rag_chunk_size                = 512
+# rag_chunk_overlap             = 100
+# generation_model              = "gemini-1.5-flash-002"
+# rag_retrieval_top_k           = 10
+# rag_vector_distance_threshold = 0.5
+
+# ── IAM ─────────────────────────────────────────────────────────────────────
+
+# rag_sa_description = "Service account used by the Vertex AI RAG pipeline"

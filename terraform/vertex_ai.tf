@@ -1,5 +1,10 @@
 # Vertex AI RAG Engine resources
 # Uses the google-beta provider because RAG Engine is still in preview.
+#
+# NOTE: `google_vertex_ai_rag_corpus` was introduced in google-beta ~5.14 and
+# may not be present in all 5.x patch releases.  If `terraform validate` reports
+# "unsupported resource type", pin the google-beta provider to a version that
+# includes the resource or upgrade to 6.x once GA support is available.
 
 # ── RAG Corpus ───────────────────────────────────────────────────────────────
 resource "google_vertex_ai_rag_corpus" "corpus" {
@@ -26,11 +31,7 @@ resource "google_secret_manager_secret" "rag_corpus_name" {
   secret_id = "${var.app_name}-rag-corpus-name"
   project   = var.project_id
 
-  labels = {
-    environment = var.environment
-    managed_by  = "terraform"
-    component   = "rag-vertex-ai"
-  }
+  labels = merge(local.common_labels, { component = "rag-vertex-ai" })
 
   replication {
     auto {}

@@ -9,11 +9,12 @@ resource "google_service_account" "rag_sa" {
 }
 
 # ── Project-level IAM roles for the RAG service account ─────────────────────
+# Only roles that cannot be scoped to individual resources are listed here.
+# - GCS access  → granted per-bucket in gcs.tf (roles/storage.objectAdmin)
+# - Secret access → granted per-secret in secret_manager.tf (roles/secretmanager.secretAccessor)
 locals {
   rag_sa_project_roles = [
-    "roles/aiplatform.user",           # Vertex AI APIs
-    "roles/secretmanager.secretAccessor", # read secrets
-    "roles/storage.objectAdmin",       # GCS read/write
+    "roles/aiplatform.user", # Vertex AI APIs – no resource-level binding available
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
     "roles/cloudtrace.agent",

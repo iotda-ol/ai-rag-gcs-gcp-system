@@ -40,6 +40,7 @@ output "secret_prefix" {
 
 output "secret_ids" {
   description = "Map of logical secret key → Secret Manager secret ID."
+  sensitive   = true
   value = {
     for k, s in google_secret_manager_secret.app_secrets :
     k => s.secret_id
