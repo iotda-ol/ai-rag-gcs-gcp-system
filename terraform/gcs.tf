@@ -12,6 +12,7 @@ resource "google_storage_bucket" "raw_docs" {
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
+  force_destroy               = var.force_destroy_buckets
 
   versioning {
     enabled = var.bucket_versioning_enabled
@@ -32,17 +33,13 @@ resource "google_storage_bucket" "raw_docs" {
       type = "Delete"
     }
     condition {
-      age                   = 365
-      with_state            = "ARCHIVED"
-      num_newer_versions    = 3
+      age                = 365
+      with_state         = "ARCHIVED"
+      num_newer_versions = 3
     }
   }
 
-  labels = {
-    environment = var.environment
-    managed_by  = "terraform"
-    component   = "rag-raw-docs"
-  }
+  labels = merge(local.common_labels, { component = "rag-raw-docs" })
 
   depends_on = [google_project_service.apis]
 }
@@ -56,6 +53,7 @@ resource "google_storage_bucket" "processed_docs" {
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
+  force_destroy               = var.force_destroy_buckets
 
   versioning {
     enabled = var.bucket_versioning_enabled
@@ -71,11 +69,7 @@ resource "google_storage_bucket" "processed_docs" {
     }
   }
 
-  labels = {
-    environment = var.environment
-    managed_by  = "terraform"
-    component   = "rag-processed-docs"
-  }
+  labels = merge(local.common_labels, { component = "rag-processed-docs" })
 
   depends_on = [google_project_service.apis]
 }
@@ -92,3 +86,4 @@ resource "google_storage_bucket_iam_member" "rag_sa_processed_docs_admin" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.rag_sa.email}"
 }
+

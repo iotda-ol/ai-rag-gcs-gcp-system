@@ -1,0 +1,70 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["terraform/**"]
+  pull_request:
+    paths: ["terraform/**"]
+
+permissions:
+  contents: read
+  pull-requests: write   # allow the plan step to post a PR comment
+
+jobs:
+  terraform:
+    name: Lint · Validate · Plan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Install Terraform ─────────────────────────────────────────────────
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.5"
+
+      # ── Formatting check ──────────────────────────────────────────────────
+      - name: Terraform Format
+        run: terraform fmt -check -recursive -diff
+
+      # ── Initialise (no backend) ───────────────────────────────────────────
+      # -backend=false skips remote-state initialisation so CI does not need
+      # GCS credentials just to validate the configuration.
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      # ── Validate HCL syntax and provider schema ───────────────────────────
+      - name: Terraform Validate
+        run: terraform validate
+
+      # ── Plan (requires GCP credentials via Workload Identity or SA key) ───
+      # This step is SKIPPED unless the TF_VAR_project_id secret is configured.
+      # To enable it:
+      #   1. Add GCP_PROJECT_ID and GCP_SA_KEY (base64 JSON key) as repository
+      #      secrets, or configure Workload Identity Federation.
+      #   2. Remove the `if: false` condition below.
+      - name: Authenticate to GCP
+        if: false   # remove once credentials are configured
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Terraform Plan
+        if: false   # remove once credentials are configured
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_STATE_BUCKET }}"
+          terraform plan \
+            -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -out=tfplan \
+            -no-color 2>&1 | tee plan.txt
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
